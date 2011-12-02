@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <title>Try Lambda Calculus!</title>
+    <script type="text/javascript" src="jquery-console/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="jquery-console/jquery.console.js"></script>
+    <script type="text/javascript" src="lc_parser.js"></script>
+    <script type="text/javascript" src="lc_evaluator.js"></script>
+    <script type="text/javascript">
+      function lcEvaluate(line) {
+        var expr = parser.parse(line);
+        return evaluator.eval(expr, {});
+      }
+
+      $(document).ready(function(){
+         var lcConsole = $('.lcConsole');
+         $('body').append(lcConsole);
+         var controller2 = lcConsole.console({
+           promptLabel: '> ',
+           commandValidate: function(line){
+             if (line == "") return false;
+             else return true;
+           },
+           commandHandle: lcEvaluate,
+           animateScroll: true,
+         });
+       });
+    </script>
+    <style type="text/css" media="screen">
+      div.lcConsole { word-wrap: break-word; }
+      div.lcConsole { font-size: 14px; margin-top:1em }
+      div.lcConsole div.jquery-console-inner {
+        width: 40em;
+        height: 25em;
+        background:#efefef;
+        padding:0.5em;
+        overflow:auto
+      }
+      div.lcConsole div.jquery-console-prompt-box {
+        color:#444; font-family:monospace;
+      }
+      div.lcConsole div.jquery-console-focus span.jquery-console-cursor {
+        background:#333;
+        color:#eee;
+        font-weight:bold
+      }
+      div.lcConsole div.jquery-console-message-error {
+        color: #ef0505;
+        font-family: sans-serif;
+        font-weight: bold;
+        padding: 0.1em;
+      }
+      div.lcConsole div.jquery-console-message-success {
+        color:#187718;
+        font-family:monospace;
+        padding:0.1em;
+      }
+      div.lcConsole span.jquery-console-prompt-label {
+        color: red;
+      }
+
+      code { background:#efefef; }
+      #by-line {bottom: 1em; position: absolute;}
+    </style>
+  </head>
+  <body>
+    <h1>Try Lambda Calculus!</h1>
+    <p>Have two minutes? Give the Lambda Calculus a shot right now!</p>
+    <p>If you're a beginner you can start with some basics:</p>
+    <dl>
+      <dt>Variables!</dt>
+      <dd><code>x</code>, <code>y</code>, <code>a</code>, and other letters!</dd>
+      <dt>Functions!</dt>
+      <dd><code>\x.x</code>, <code>\x.\y.x</code>, and more!</dd>
+      <dt>Application!</dt>
+      <dd><code>(\x.x) \z.z</code>, <code>(\x.\y.x) z q</code>, and even <code>(\x.x x) (\y.y y)</code>!</dd>
+    </dl>
+
+    <div class="lcConsole"></div>
+
+    <div id="by-line">
+      <p>Hacked out in a night by <a href="http://mike-burns.com/">Mike Burns</a>. Thanks to <a href="http://tryruby.org/">Try Ruby</a> and <a href="http://tryhaskell.org/">Try Haskell</a>; and to <a href="http://zaach.github.com/jison/">jison</a> and <a href="https://github.com/chrisdone/jquery-console">jquery-console</a>. Learn more about <a href="http://en.wikipedia.org/wiki/Lambda_Calculus">the Lambda Calculus at Wikipedia</a>.</p>
+    </div>
+  </body>
+</html>
