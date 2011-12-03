@@ -9,14 +9,26 @@
     <script type="text/javascript" src="lc_evaluator.js"></script>
     <script type="text/javascript">
       function lcEvaluate(line) {
-        var expr = parser.parse(line);
-        return evaluator.eval(expr, {});
+        try {
+          var expr = parser.parse(line);
+          return evaluator.eval(expr, {});
+        } catch (e) {
+          return e.message;
+        }
+      }
+
+      var controller;
+      function insertCode(code) {
+        if (controller != undefined) {
+          controller.typer.consoleInsert(code);
+          controller.typer.focus();
+        }
       }
 
       $(document).ready(function(){
          var lcConsole = $('.lcConsole');
          $('body').append(lcConsole);
-         var controller2 = lcConsole.console({
+         controller = lcConsole.console({
            promptLabel: '> ',
            commandValidate: function(line){
              if (line == "") return false;
@@ -24,6 +36,7 @@
            },
            commandHandle: lcEvaluate,
            animateScroll: true,
+           autofocus: true,
          });
        });
     </script>
@@ -60,7 +73,7 @@
         color: red;
       }
 
-      code { background:#efefef; }
+      code { background:#efefef; cursor: pointer; }
       #by-line {bottom: 1em; position: absolute;}
     </style>
   </head>
@@ -70,11 +83,11 @@
     <p>If you're a beginner you can start with some basics:</p>
     <dl>
       <dt>Variables!</dt>
-      <dd><code>x</code>, <code>y</code>, <code>a</code>, and other letters!</dd>
+      <dd><code onclick="insertCode('x')">x</code>, <code onclick="insertCode('y')">y</code>, <code onclick="insertCode('a')">a</code>, and other letters!</dd>
       <dt>Functions!</dt>
-      <dd><code>\x.x</code>, <code>\x.\y.x</code>, and more!</dd>
+      <dd><code onclick="insertCode('\\x.x')">\x.x</code>, <code onclick="insertCode('\\x.\\y.x')">\x.\y.x</code>, and more!</dd>
       <dt>Application!</dt>
-      <dd><code>(\x.x) \z.z</code>, <code>(\x.\y.x) z q</code>, and even <code>(\x.x x) (\y.y y)</code>!</dd>
+      <dd><code onclick="insertCode('(\\x.x) \\z.z')">(\x.x) \z.z</code>, <code onclick="insertCode('(\\x.\\y.x) z q')">(\x.\y.x) z q</code>, and even <code onclick="insertCode('(\\x.x x) (\\y.y y)')">(\x.x x) (\y.y y)</code>!</dd>
     </dl>
 
     <div class="lcConsole"></div>
