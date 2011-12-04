@@ -51,9 +51,9 @@ var evaluator = (function() { return {
       var lambda_variable = expr[1];
       var lambda_body = expr[2];
       return (lambda_variable != variable &&
-          is_free_in(lambda_body, variable));
+          this.is_free_in(lambda_body, variable));
     } else if (tag == "ApplyExpr")
-      return is_free_in(expr[1], variable) || is_free_in(expr[2], variable);
+      return this.is_free_in(expr[1], variable) || this.is_free_in(expr[2], variable);
   },
 
   stringify: function(expr) {
