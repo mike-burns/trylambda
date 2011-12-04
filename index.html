@@ -11,7 +11,7 @@
       function lcEvaluate(line) {
         try {
           var expr = parser.parse(line);
-          return evaluator.eval(expr, {});
+          return evaluator.stringify(evaluator.reduce(expr));
         } catch (e) {
           return e.message;
         }

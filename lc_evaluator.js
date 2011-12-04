@@ -1,75 +1,66 @@
 var evaluator = (function() { return {
-  eval: function(expr) {
-    return this.stringify(this.evalWithEnvironment(expr, {}))
+  reduce: function(expr) {
+    var tag = expr[0];
+    if (tag == "VarExpr")
+      return expr;
+    else if (tag == "LambdaExpr")
+      return expr;
+    else if (tag == "ApplyExpr") {
+      var e0 = expr[1];
+      var e1 = expr[2];
+      if (e0[0] == "LambdaExpr") {
+        var variable = e0[1];
+        var body = e0[2];
+        return this.reduce(this.subst(body, variable, e1));
+      } else
+        return this.reduce(["ApplyExpr", this.reduce(e0), e1]);
+    }
   },
 
-  evalWithEnvironment: function(expr, env) {
+  subst: function(expr, variable, value) {
     var tag = expr[0];
     if (tag == "VarExpr") {
-      var value = this.lookUpInEnv(expr[1], env);
-      var valueTag = value[0];
-      if (valueTag == "VarExpr") {
+      if (expr[1] == variable)
         return value;
+      else
+        return expr;
+    } else if (tag == "LambdaExpr") {
+      var lambda_variable = expr[1];
+      var lambda_body = expr[2];
+      if (variable == lambda_variable) {
+        return expr;
+      } else if (this.is_free_in(value, lambda_variable) && this.is_free_in(lambda_body, variable)) {
+        var new_var = lambda_variable + "1";
+        return ["LambdaExpr", new_var,
+               this.subst(this.subst(lambda_body, lambda_variable, ["VarExpr", new_var]),
+                     variable, value)];
       } else {
-        return this.evalWithEnvironment(value, env);
+        return ["LambdaExpr", lambda_variable, this.subst(lambda_body, variable, value)];
       }
-    } else if (tag == "LambdaExpr") {
-      return expr;
-      var variable = expr[1];
-      var body = expr[2];
-      return ["LambdaExpr", variable, this.evalWithEnvironment(body, env)]
-    } else if (tag == "ApplyExpr") {
-      var f1 = expr[1];
-      var f2 = expr[2];
-      return this.betaReduce(this.evalWithEnvironment(f1, env), f2, env);
-    }
-  },
-
-  betaReduce: function(lambdaExpr, arg, env) {
-    var tag = lambdaExpr[0];
-    if (tag == "LambdaExpr") {
-      var variable = lambdaExpr[1];
-      var body = lambdaExpr[2];
-      var newEnv = this.extendEnv(env, variable, arg);
-      return this.evalWithEnvironment(this.applyNewEnv(newEnv, body), newEnv);
-    } else {
-      return ["Error", "tried to apply a non-lambda expression: " + this.stringify(lambdaExpr)];
-    }
-  },
-
-  applyNewEnv: function(env, expr) {
-    var tag = expr[0];
-    if (tag == "VarExpr") {
-      return this.lookUpInEnv(expr[1], env);
-    } else if (tag == "LambdaExpr") {
-      return expr;
-    } else if (tag == "ApplyExpr") {
+    } else if (tag == "ApplyExpr")
       return ["ApplyExpr",
-        this.applyNewEnv(env, expr[1]),
-        this.applyNewEnv(env, expr[2])];
-    }
+        this.subst(expr[1], variable, value),
+        this.subst(expr[2], variable, value)];
   },
 
-  lookUpInEnv: function(variable, env) {
-    var value = env[variable];
-    if (value == undefined) { // free var
-      return ["VarExpr", variable];
-    } else {
-      return value;
-    }
-  },
-
-  extendEnv: function(env, variable, value) {
-    var newEnv = env;
-    newEnv[variable] = value;
-    return newEnv;
+  is_free_in: function(expr, variable) {
+    var tag = expr[0];
+    if (tag == "VarExpr")
+      return expr[1] == variable;
+    else if (tag == "LambdaExpr") {
+      var lambda_variable = expr[1];
+      var lambda_body = expr[2];
+      return (lambda_variable != variable &&
+          is_free_in(lambda_body, variable));
+    } else if (tag == "ApplyExpr")
+      return is_free_in(expr[1], variable) || is_free_in(expr[2], variable);
   },
 
   stringify: function(expr) {
     var tag = expr[0];
-    if (tag == "VarExpr") {
+    if (tag == "VarExpr")
       return expr[1];
-    } else if (tag == "LambdaExpr") {
+    else if (tag == "LambdaExpr") {
       var variable = expr[1];
       var body = expr[2];
       return '\\' + variable + '.' + this.stringify(body);
@@ -77,8 +68,7 @@ var evaluator = (function() { return {
       var f1 = expr[1];
       var f2 = expr[2];
       return this.stringify(f1) + ' ' + this.stringify(f2);
-    } else if (tag == "Error") {
+    } else if (tag == "Error")
       return "Error: " + expr[1];
-    }
   }
 }})();
